@@ -1,0 +1,85 @@
+﻿{% extends "base.html" %}
+{% block title %}Заявки{% endblock %}
+{% block content %}
+<h1>Заявки жильцов</h1>
+<h2>Добавить</h2>
+<form method="post" action="{{ url_for('create_request') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <select name="building_id" required>
+        <option value="">— здание —</option>
+        {% for b in buildings %}<option value="{{ b.id }}">{{ b.address }}</option>{% endfor %}
+    </select>
+    <input name="apartment" placeholder="Квартира" required>
+    <textarea name="description" placeholder="Описание" required></textarea>
+    <select name="priority">
+        <option value="низкий">низкий</option>
+        <option value="средний">средний</option>
+        <option value="высокий">высокий</option>
+    </select>
+    <select name="status">
+        <option value="новая">новая</option>
+        <option value="в работе">в работе</option>
+        <option value="выполнена">выполнена</option>
+        <option value="отклонена">отклонена</option>
+    </select>
+    <label>Дата выполнения: <input type="date" name="completed_date"></label>
+    <select name="assigned_to">
+        <option value="">— исполнитель —</option>
+        {% for e in employees %}<option value="{{ e.id }}">{{ e.full_name }}</option>{% endfor %}
+    </select>
+    <button type="submit">Добавить</button>
+</form>
+<h2>Список</h2>
+<table>
+    <tr><th>ID</th><th>Создана</th><th>Здание</th><th>Кв.</th><th>Описание</th><th>Приоритет</th><th>Статус</th><th>Выполнена</th><th>Исполнитель</th><th>Действия</th></tr>
+    {% for r in requests %}
+    <tr>
+        <td>{{ r.id }}</td>
+        <td>{{ r.created_date|DTF if r.created_date else '' }}</td>
+        <td>{{ r.building.address if r.building else r.building_id }}</td>
+        <td>{{ r.apartment }}</td>
+        <td>{{ r.description }}</td>
+        <td>{{ r.priority }}</td>
+        <td>{{ r.status }}</td>
+        <td>{{ r.completed_date|DTF if r.completed_date else '' }}</td>
+        <td>{{ r.assigned_employee.full_name if r.assigned_employee else '' }}</td>
+        <td>
+            <form method="post" action="{{ url_for('edit_request', req_id=r.id) }}" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <select name="building_id" required>
+                    {% for b in buildings %}
+                    <option value="{{ b.id }}" {% if r.building_id == b.id %}selected{% endif %}>{{ b.address }}</option>
+                    {% endfor %}
+                </select>
+                <input name="apartment" value="{{ r.apartment }}" required>
+                <textarea name="description" required>{{ r.description }}</textarea>
+                <select name="priority">
+                    {% for p in ['низкий','средний','высокий'] %}
+                    <option value="{{ p }}" {% if r.priority == p %}selected{% endif %}>{{ p }}</option>
+                    {% endfor %}
+                </select>
+                <select name="status">
+                    {% for s in ['новая','в работе','выполнена','отклонена'] %}
+                    <option value="{{ s }}" {% if r.status == s %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+                <input type="date" name="completed_date" value="{{ r.completed_date.isoformat() if r.completed_date else '' }}">
+                <select name="assigned_to">
+                    <option value="">—</option>
+                    {% for e in employees %}
+                    <option value="{{ e.id }}" {% if r.assigned_to == e.id %}selected{% endif %}>{{ e.full_name }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit">Сохранить</button>
+            </form>
+            {% if current_user.role == Role.ADMIN %}
+            <form method="post" action="{{ url_for('delete_request', req_id=r.id) }}" class="inline" onsubmit="return confirm('Удалить?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit">Удалить</button>
+            </form>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

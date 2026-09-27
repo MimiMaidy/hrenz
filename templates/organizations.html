@@ -1,0 +1,45 @@
+﻿{% extends "base.html" %}
+{% block title %}Организации{% endblock %}
+{% block content %}
+<h1>Организации</h1>
+<h2>Добавить</h2>
+<form method="post" action="{{ url_for('create_organization') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input name="name" placeholder="Название" required>
+    <input name="inn" placeholder="ИНН">
+    <input name="phone" placeholder="Телефон">
+    <input name="contact_person" placeholder="Контактное лицо">
+    <input name="address" placeholder="Адрес">
+    <button type="submit">Добавить</button>
+</form>
+<h2>Список</h2>
+<table>
+    <tr><th>ID</th><th>Название</th><th>ИНН</th><th>Телефон</th><th>Контакт</th><th>Адрес</th><th>Действия</th></tr>
+    {% for o in organizations %}
+    <tr>
+        <td>{{ o.id }}</td>
+        <td>{{ o.name }}</td>
+        <td>{{ o.inn or '' }}</td>
+        <td>{{ o.phone or '' }}</td>
+        <td>{{ o.contact_person or '' }}</td>
+        <td>{{ o.address or '' }}</td>
+        <td>
+            <form method="post" action="{{ url_for('edit_organization', org_id=o.id) }}" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input name="name" value="{{ o.name }}" required>
+                <input name="inn" value="{{ o.inn or '' }}">
+                <input name="phone" value="{{ o.phone or '' }}">
+                <input name="contact_person" value="{{ o.contact_person or '' }}">
+                <input name="address" value="{{ o.address or '' }}">
+                <button type="submit">Сохранить</button>
+            </form>
+            <form method="post" action="{{ url_for('delete_organization', org_id=o.id) }}" class="inline" onsubmit="return confirm('Удалить?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit">Удалить</button>
+            </form>
+            <a href="{{ url_for('org_employees', org_id=o.id) }}">Сотрудники</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

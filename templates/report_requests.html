@@ -1,0 +1,44 @@
+﻿{% extends "base.html" %}
+{% block title %}Отчёт по заявкам{% endblock %}
+{% block content %}
+<h1>Отчёт по заявкам</h1>
+<form method="get" action="{{ url_for('report_requests') }}">
+    <label>С даты: <input type="date" name="date_from" value="{{ date_from }}"></label>
+    <label>По дату: <input type="date" name="date_to" value="{{ date_to }}"></label>
+    <select name="building_id">
+        <option value="">— все здания —</option>
+        {% for b in buildings %}
+        <option value="{{ b.id }}" {% if building_id == b.id %}selected{% endif %}>{{ b.address }}</option>
+        {% endfor %}
+    </select>
+    <select name="status">
+        <option value="">— все статусы —</option>
+        {% for s in ['новая','в работе','выполнена','отклонена'] %}
+        <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+    </select>
+    <select name="priority">
+        <option value="">— все приоритеты —</option>
+        {% for p in ['низкий','средний','высокий'] %}
+        <option value="{{ p }}" {% if priority_filter == p %}selected{% endif %}>{{ p }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Показать</button>
+</form>
+<table>
+    <tr><th>ID</th><th>Создана</th><th>Здание</th><th>Кв.</th><th>Описание</th><th>Приоритет</th><th>Статус</th><th>Выполнена</th><th>Исполнитель</th></tr>
+    {% for r in records %}
+    <tr>
+        <td>{{ r.id }}</td>
+        <td>{{ r.created_date|DTF if r.created_date else '' }}</td>
+        <td>{{ r.building.address if r.building else r.building_id }}</td>
+        <td>{{ r.apartment }}</td>
+        <td>{{ r.description }}</td>
+        <td>{{ r.priority }}</td>
+        <td>{{ r.status }}</td>
+        <td>{{ r.completed_date|DTF if r.completed_date else '' }}</td>
+        <td>{{ r.assigned_employee.full_name if r.assigned_employee else '' }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

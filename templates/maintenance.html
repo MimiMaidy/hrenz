@@ -1,0 +1,82 @@
+﻿{% extends "base.html" %}
+{% block title %}ТО{% endblock %}
+{% block content %}
+<h1>Плановое ТО</h1>
+<h2>Добавить</h2>
+<form method="post" action="{{ url_for('create_maintenance') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <select name="building_id" required>
+        <option value="">— здание —</option>
+        {% for b in buildings %}<option value="{{ b.id }}">{{ b.address }}</option>{% endfor %}
+    </select>
+    <select name="system_id" required>
+        <option value="">— система —</option>
+        {% for s in systems %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+    </select>
+    <label>Плановая: <input type="date" name="scheduled_date" required></label>
+    <label>Фактическая: <input type="date" name="actual_date"></label>
+    <select name="performed_by">
+        <option value="">— исполнитель —</option>
+        {% for e in employees %}<option value="{{ e.id }}">{{ e.full_name }}</option>{% endfor %}
+    </select>
+    <select name="contractor_org_id">
+        <option value="">— подрядчик —</option>
+        {% for o in organizations %}<option value="{{ o.id }}">{{ o.name }}</option>{% endfor %}
+    </select>
+    <input name="result" placeholder="Результат">
+    <button type="submit">Добавить</button>
+</form>
+<h2>Список</h2>
+<table>
+    <tr><th>ID</th><th>Здание</th><th>Система</th><th>Плановая</th><th>Фактическая</th><th>Исполнитель</th><th>Подрядчик</th><th>Результат</th><th>Действия</th></tr>
+    {% for m in maintenance_list %}
+    <tr>
+        <td>{{ m.id }}</td>
+        <td>{{ m.building.address if m.building else m.building_id }}</td>
+        <td>{{ m.system.name if m.system else m.system_id }}</td>
+        <td>{{ m.scheduled_date|DTF if m.scheduled_date else '' }}</td>
+        <td>{{ m.actual_date|DTF if m.actual_date else '' }}</td>
+        <td>{{ m.employee.full_name if m.employee else '' }}</td>
+        <td>{{ m.contractor.name if m.contractor else '' }}</td>
+        <td>{{ m.result or '' }}</td>
+        <td>
+            <form method="post" action="{{ url_for('edit_maintenance', m_id=m.id) }}" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <select name="building_id" required>
+                    {% for b in buildings %}
+                    <option value="{{ b.id }}" {% if m.building_id == b.id %}selected{% endif %}>{{ b.address }}</option>
+                    {% endfor %}
+                </select>
+                <select name="system_id" required>
+                    {% for s in systems %}
+                    <option value="{{ s.id }}" {% if m.system_id == s.id %}selected{% endif %}>{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+                <input type="date" name="scheduled_date" value="{{ m.scheduled_date.isoformat() if m.scheduled_date else '' }}" required>
+                <input type="date" name="actual_date" value="{{ m.actual_date.isoformat() if m.actual_date else '' }}">
+                <select name="performed_by">
+                    <option value="">—</option>
+                    {% for e in employees %}
+                    <option value="{{ e.id }}" {% if m.performed_by == e.id %}selected{% endif %}>{{ e.full_name }}</option>
+                    {% endfor %}
+                </select>
+                <select name="contractor_org_id">
+                    <option value="">—</option>
+                    {% for o in organizations %}
+                    <option value="{{ o.id }}" {% if m.contractor_org_id == o.id %}selected{% endif %}>{{ o.name }}</option>
+                    {% endfor %}
+                </select>
+                <input name="result" value="{{ m.result or '' }}">
+                <button type="submit">Сохранить</button>
+            </form>
+            {% if current_user.role == Role.ADMIN %}
+            <form method="post" action="{{ url_for('delete_maintenance', m_id=m.id) }}" class="inline" onsubmit="return confirm('Удалить?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit">Удалить</button>
+            </form>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

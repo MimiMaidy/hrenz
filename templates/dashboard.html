@@ -1,0 +1,25 @@
+﻿{% extends "base.html" %}
+{% block title %}Дашборд{% endblock %}
+{% block content %}
+<h1>Добро пожаловать, {{ current_user.name }}!</h1>
+<p>Ваша роль:
+    {% if current_user.role == Role.ADMIN %}Администратор
+    {% elif current_user.role == Role.EMPLOYEE %}Сотрудник
+    {% else %}Пользователь{% endif %}
+</p>
+<h2>Разделы</h2>
+<ul>
+    <li><a href="{{ url_for('organizations') }}">Организации</a></li>
+    <li><a href="{{ url_for('employees') }}">Сотрудники</a></li>
+    <li><a href="{{ url_for('buildings') }}">Здания</a></li>
+    <li><a href="{{ url_for('systems') }}">Инженерные системы</a></li>
+    <li><a href="{{ url_for('building_systems') }}">Связи зданий и систем</a></li>
+    <li><a href="{{ url_for('maintenance') }}">Плановое ТО</a></li>
+    <li><a href="{{ url_for('requests') }}">Заявки жильцов</a></li>
+</ul>
+<h2>Отчёты</h2>
+<ul>
+    <li><a href="{{ url_for('report_maintenance') }}">Отчёт по ТО</a></li>
+    <li><a href="{{ url_for('report_requests') }}">Отчёт по заявкам</a></li>
+</ul>
+{% endblock %}

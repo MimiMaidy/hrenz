@@ -1,0 +1,22 @@
+﻿{% extends "base.html" %}
+{% block title %}Вход{% endblock %}
+
+{% block content %}
+<h1>Вход в систему</h1>
+
+<form method="post" action="{{ url_for('login') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <p>
+        <label>Логин:<br>
+            <input name="username" required autofocus>
+        </label>
+    </p>
+    <p>
+        <label>Пароль:<br>
+            <input type="password" name="password" required>
+        </label>
+    </p>
+    <button type="submit">Войти</button>
+</form>
+{% endblock %}

@@ -1,0 +1,45 @@
+﻿{% extends "base.html" %}
+{% block title %}Здания{% endblock %}
+{% block content %}
+<h1>Здания</h1>
+<h2>Добавить</h2>
+<form method="post" action="{{ url_for('create_building') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input name="address" placeholder="Адрес" required>
+    <input name="series" placeholder="Серия">
+    <input name="year_built" placeholder="Год постройки" type="number">
+    <input name="flats_count" placeholder="Квартир" type="number" required>
+    <input name="entrances" placeholder="Подъездов" type="number">
+    <button type="submit">Добавить</button>
+</form>
+<h2>Список</h2>
+<table>
+    <tr><th>ID</th><th>Адрес</th><th>Серия</th><th>Год</th><th>Квартир</th><th>Подъездов</th><th>Действия</th></tr>
+    {% for b in buildings %}
+    <tr>
+        <td>{{ b.id }}</td>
+        <td>{{ b.address }}</td>
+        <td>{{ b.series or '' }}</td>
+        <td>{{ b.year_built or '' }}</td>
+        <td>{{ b.flats_count }}</td>
+        <td>{{ b.entrances or '' }}</td>
+        <td>
+            <form method="post" action="{{ url_for('edit_building', building_id=b.id) }}" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input name="address" value="{{ b.address }}" required>
+                <input name="series" value="{{ b.series or '' }}">
+                <input name="year_built" value="{{ b.year_built or '' }}" type="number">
+                <input name="flats_count" value="{{ b.flats_count }}" type="number" required>
+                <input name="entrances" value="{{ b.entrances or '' }}" type="number">
+                <button type="submit">Сохранить</button>
+            </form>
+            <form method="post" action="{{ url_for('delete_building', building_id=b.id) }}" class="inline" onsubmit="return confirm('Удалить?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit">Удалить</button>
+            </form>
+            <a href="{{ url_for('building_systems_by_building', building_id=b.id) }}">Системы</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

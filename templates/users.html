@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Пользователи{% endblock %}
+{% block content %}
+<h1>Пользователи</h1>
+<h2>Добавить</h2>
+<form method="post" action="{{ url_for('create_user') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input name="name" placeholder="Имя" required>
+    <input name="login" placeholder="Логин" required>
+    <input type="password" name="password" placeholder="Пароль" required>
+    <select name="role">
+        <option value="{{ Role.USER.value }}">Пользователь</option>
+        <option value="{{ Role.EMPLOYEE.value }}">Сотрудник</option>
+        <option value="{{ Role.ADMIN.value }}">Администратор</option>
+    </select>
+    <button type="submit">Создать</button>
+</form>
+<h2>Список</h2>
+<table>
+    <tr><th>ID</th><th>Логин</th><th>Имя</th><th>Роль</th><th>Действия</th></tr>
+    {% for u in users %}
+    <tr>
+        <td>{{ u.id }}</td>
+        <td>{{ u.login }}</td>
+        <td>{{ u.name }}</td>
+        <td>{% if u.role == Role.ADMIN %}Администратор{% elif u.role == Role.EMPLOYEE %}Сотрудник{% else %}Пользователь{% endif %}</td>
+        <td>
+            <form method="post" action="{{ url_for('edit_user', user_id=u.id) }}" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input name="name" value="{{ u.name }}" required>
+                <input name="login" value="{{ u.login }}" required>
+                <input type="password" name="password" placeholder="Новый пароль">
+                <select name="role">
+                    <option value="{{ Role.USER.value }}" {% if u.role == Role.USER %}selected{% endif %}>Пользователь</option>
+                    <option value="{{ Role.EMPLOYEE.value }}" {% if u.role == Role.EMPLOYEE %}selected{% endif %}>Сотрудник</option>
+                    <option value="{{ Role.ADMIN.value }}" {% if u.role == Role.ADMIN %}selected{% endif %}>Администратор</option>
+                </select>
+                <button type="submit">Сохранить</button>
+            </form>
+            <form method="post" action="{{ url_for('delete_user', user_id=u.id) }}" class="inline" onsubmit="return confirm('Удалить?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit">Удалить</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

@@ -1,0 +1,1 @@
+INSERT INTO users (login, passwd, role, name) VALUES ('admin', '1', 7, 'Администратор системы');

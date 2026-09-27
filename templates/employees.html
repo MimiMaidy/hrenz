@@ -1,0 +1,59 @@
+﻿{% extends "base.html" %}
+{% block title %}Сотрудники{% endblock %}
+{% block content %}
+<h1>{% if organization %}Сотрудники «{{ organization.name }}»{% else %}Сотрудники{% endif %}</h1>
+<h2>Добавить</h2>
+<form method="post" action="{{ url_for('create_employee') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% if current_org_id %}<input type="hidden" name="return_org_id" value="{{ current_org_id }}">{% endif %}
+    <input name="full_name" placeholder="ФИО" required>
+    <input name="position" placeholder="Должность">
+    <input name="phone" placeholder="Телефон">
+    <input name="specialization" placeholder="Специализация">
+    <select name="organization_id">
+        <option value="">— без организации —</option>
+        {% for o in organizations %}
+        <option value="{{ o.id }}" {% if current_org_id and current_org_id == o.id %}selected{% endif %}>{{ o.name }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Добавить</button>
+</form>
+<h2>Список</h2>
+<table>
+    <tr><th>ID</th><th>ФИО</th><th>Должность</th><th>Телефон</th><th>Специализация</th><th>Организация</th><th>Действия</th></tr>
+    {% for e in employees %}
+    <tr>
+        <td>{{ e.id }}</td>
+        <td>{{ e.full_name }}</td>
+        <td>{{ e.position or '' }}</td>
+        <td>{{ e.phone or '' }}</td>
+        <td>{{ e.specialization or '' }}</td>
+        <td>{{ e.organization.name if e.organization else '—' }}</td>
+        <td>
+            <form method="post" action="{{ url_for('edit_employee', emp_id=e.id) }}" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                {% if current_org_id %}<input type="hidden" name="return_org_id" value="{{ current_org_id }}">{% endif %}
+                <input name="full_name" value="{{ e.full_name }}" required>
+                <input name="position" value="{{ e.position or '' }}">
+                <input name="phone" value="{{ e.phone or '' }}">
+                <input name="specialization" value="{{ e.specialization or '' }}">
+                <select name="organization_id">
+                    <option value="">— без организации —</option>
+                    {% for o in organizations %}
+                    <option value="{{ o.id }}" {% if e.organization_id == o.id %}selected{% endif %}>{{ o.name }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit">Сохранить</button>
+            </form>
+            {% if current_user.role == Role.ADMIN %}
+            <form method="post" action="{{ url_for('delete_employee', emp_id=e.id) }}" class="inline" onsubmit="return confirm('Удалить?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit">Удалить</button>
+            </form>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+<p><a href="{{ url_for('employees') }}">Показать всех сотрудников</a></p>
+{% endblock %}

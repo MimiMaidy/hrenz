@@ -1,0 +1,65 @@
+﻿{% extends "base.html" %}
+{% block title %}Связи{% endblock %}
+{% block content %}
+<h1>{% if building %}Системы здания «{{ building.address }}»{% else %}Связи зданий и систем{% endif %}</h1>
+<h2>Добавить</h2>
+<form method="post" action="{{ url_for('create_building_system') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% if building %}<input type="hidden" name="return_building_id" value="{{ building.id }}">{% endif %}
+    <select name="building_id" required>
+        <option value="">— здание —</option>
+        {% for b in buildings %}
+        <option value="{{ b.id }}" {% if building and building.id == b.id %}selected{% endif %}>{{ b.address }}</option>
+        {% endfor %}
+    </select>
+    <select name="system_id" required>
+        <option value="">— система —</option>
+        {% for s in systems %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+    </select>
+    <input type="date" name="installation_date">
+    <input name="status" value="активна">
+    <input name="notes" placeholder="Примечания">
+    <button type="submit">Добавить</button>
+</form>
+<h2>Список</h2>
+<table>
+    <tr><th>ID</th><th>Здание</th><th>Система</th><th>Установлена</th><th>Статус</th><th>Примечания</th><th>Действия</th></tr>
+    {% for bs in building_systems %}
+    <tr>
+        <td>{{ bs.id }}</td>
+        <td>{{ bs.building.address if bs.building else bs.building_id }}</td>
+        <td>{{ bs.system.name if bs.system else bs.system_id }}</td>
+        <td>{{ bs.installation_date|DTF if bs.installation_date else '' }}</td>
+        <td>{{ bs.status or '' }}</td>
+        <td>{{ bs.notes or '' }}</td>
+        <td>
+            <form method="post" action="{{ url_for('edit_building_system', bs_id=bs.id) }}" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                {% if building %}<input type="hidden" name="return_building_id" value="{{ building.id }}">{% endif %}
+                <select name="building_id" required>
+                    {% for b in buildings %}
+                    <option value="{{ b.id }}" {% if bs.building_id == b.id %}selected{% endif %}>{{ b.address }}</option>
+                    {% endfor %}
+                </select>
+                <select name="system_id" required>
+                    {% for s in systems %}
+                    <option value="{{ s.id }}" {% if bs.system_id == s.id %}selected{% endif %}>{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+                <input type="date" name="installation_date" value="{{ bs.installation_date.isoformat() if bs.installation_date else '' }}">
+                <input name="status" value="{{ bs.status or '' }}">
+                <input name="notes" value="{{ bs.notes or '' }}">
+                <button type="submit">Сохранить</button>
+            </form>
+            {% if current_user.role == Role.ADMIN %}
+            <form method="post" action="{{ url_for('delete_building_system', bs_id=bs.id) }}" class="inline" onsubmit="return confirm('Удалить?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit">Удалить</button>
+            </form>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+<p><a href="{{ url_for('building_systems') }}">Показать все связи</a></p>
+{% endblock %}

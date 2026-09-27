@@ -1,0 +1,38 @@
+﻿{% extends "base.html" %}
+{% block title %}Отчёт по ТО{% endblock %}
+{% block content %}
+<h1>Отчёт по ТО</h1>
+<form method="get" action="{{ url_for('report_maintenance') }}">
+    <label>С даты: <input type="date" name="date_from" value="{{ date_from }}"></label>
+    <label>По дату: <input type="date" name="date_to" value="{{ date_to }}"></label>
+    <select name="building_id">
+        <option value="">— все здания —</option>
+        {% for b in buildings %}
+        <option value="{{ b.id }}" {% if building_id == b.id %}selected{% endif %}>{{ b.address }}</option>
+        {% endfor %}
+    </select>
+    <select name="system_id">
+        <option value="">— все системы —</option>
+        {% for s in systems %}
+        <option value="{{ s.id }}" {% if system_id == s.id %}selected{% endif %}>{{ s.name }}</option>
+        {% endfor %}
+    </select>
+    <input name="result" placeholder="Результат" value="{{ result_filter }}">
+    <button type="submit">Показать</button>
+</form>
+<table>
+    <tr><th>ID</th><th>Здание</th><th>Система</th><th>Плановая</th><th>Фактическая</th><th>Исполнитель</th><th>Подрядчик</th><th>Результат</th></tr>
+    {% for m in records %}
+    <tr>
+        <td>{{ m.id }}</td>
+        <td>{{ m.building.address if m.building else m.building_id }}</td>
+        <td>{{ m.system.name if m.system else m.system_id }}</td>
+        <td>{{ m.scheduled_date|DTF if m.scheduled_date else '' }}</td>
+        <td>{{ m.actual_date|DTF if m.actual_date else '' }}</td>
+        <td>{{ m.employee.full_name if m.employee else '' }}</td>
+        <td>{{ m.contractor.name if m.contractor else '' }}</td>
+        <td>{{ m.result or '' }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
